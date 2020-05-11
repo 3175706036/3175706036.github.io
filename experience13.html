@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Intro to MapView - Create a 2D map - 4.15</title>
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 90%;
+            width: 100%;
+        }
+
+        #wenzi {
+            height: 10%;
+            width: 100%;
+            background-color: green;
+            float: left;
+            h3
+
+        {
+            position: absolute;
+            top: -6px;
+            color: oldlace;
+        }
+    </style>
+
+    <link rel="stylesheet"
+          href="https://js.arcgis.com/4.15/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.15/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/widgets/BasemapToggle",
+            "esri/widgets/BasemapGallery",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/Legend",
+            "esri/widgets/ScaleBar",
+            "esri/widgets/Search",
+            "esri/widgets/Expand",
+            "esri/widgets/Compass",
+            "esri/widgets/Home",
+            "esri/widgets/Locate"
+        ], function (
+            Map,
+            MapView,
+            BasemapToggle,
+            BasemapGallery,
+            FeatureLayer,
+            Legend,
+            ScaleBar,
+            Search,
+            Expand,
+            Compass,
+            Home,
+            Locate
+        ) {
+            var flayer = new FeatureLayer({
+                url:
+                    "http://www.arcgisonline.cn/server/rest/services/Hosted/1996%E8%87%B32009%E4%B8%AD%E5%9B%BD%E5%90%84%E7%9C%81%E4%BA%BA%E5%9D%87%E8%80%95%E5%9C%B0%E5%8F%98%E5%8C%96/FeatureServer"
+            });
+            var map1 = new Map({
+                basemap: "streets",
+                layers: [flayer]
+            });
+
+            var view1 = new MapView({
+                container: "viewDiv",
+                map: map1,
+                zoom: 4,
+                center: [103, 35] // longitude, latitude
+            });
+            var legend1 = new Legend({
+                view: view1,
+                layerInfos: [
+                    {
+                        layer: flayer,
+                        title: "1996-2009各省人均耕地变化"
+                    }
+                ]
+            });
+            view1.ui.add(legend1, "bottom-left");
+            var scaleBar1 = new ScaleBar({
+                view: view1,
+                style: "ruler",
+                unit: "metric"
+            });
+            view1.ui.add(scaleBar1, {
+                position: "bottom-left"
+            });
+            var coordsWidget = document.createElement("div");
+            coordsWidget.id = "coordsWidget";
+            coordsWidget.className = "esri-widget esri-component";
+            coordsWidget.style.padding = "7px 15px 5px";
+
+            view1.ui.add(coordsWidget, "bottom-right");
+            function showCoordinates(pt) {
+                var coords =
+                    "Lat/Lon " +
+                    pt.latitude.toFixed(3) +
+                    " " +
+                    pt.longitude.toFixed(3) +
+                    " | Scale 1:" +
+                    Math.round(view1.scale * 1) / 1 +
+                    " | Zoom " +
+                    view1.zoom;
+                coordsWidget.innerHTML = coords;
+            }
+            view1.watch("stationary", function (isStationary) {
+                showCoordinates(view1.center);
+            });
+
+            view1.on("pointer-move", function (evt) {
+                showCoordinates(view1.toMap({ x: evt.x, y: evt.y }));
+            });
+            var locate = new Locate({
+                view: view1
+            });
+            view1.ui.add(locate, "top-right");
+            var compass = new Compass({
+                view: view1
+            });
+
+            view1.ui.add(compass, "top-left");
+            view1.ui.add(
+                [
+                    new expand({
+                        view: view1,
+                        content: ser,
+                        group: "top-left"
+                    }),
+                    new expand({
+                        view: view1,
+                        content: new BasemapGallery({
+                            view: view1,
+                            source: {
+                                portal: {
+                                    url: "https://www.arcgis.com",
+                                    useVectorBasemaps: true
+                                }
+                            }
+                        }),
+                        group: "top-left"
+                    }),
+                    ,
+                    new expand({
+                        view: view1,
+                        content: legend,
+                        group: "top-left"
+                    })
+                ],
+                "top-right"
+            );
+        });
+    </script>
+</head>
+<body>
+    <div id="wenzi">
+        <h3>1996-2009各省人均耕地变化</h3>
+    </div>
+    <div id="viewDiv"></div>
+</body>
+</html>
